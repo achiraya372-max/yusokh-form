@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตารางเวร / Duty Roster — Yusokh Care Solution</title>
+<style>
+  :root{--navy:#1a1a2e;--navy2:#16213e;--blue:#2563eb;--blue-light:#dbeafe;--green-light:#d1fae5;--green-dark:#065f46;--red-light:#fee2e2;--red-dark:#991b1b;--yellow-light:#fef3c7;--yellow-dark:#92400e;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-400:#9ca3af;--gray-600:#4b5563;--gray-800:#1f2937}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans Thai','Sarabun',system-ui,sans-serif;background:var(--gray-100);color:var(--gray-800);min-height:100vh}
+  .header{background:var(--navy);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  .header-left{display:flex;align-items:center;gap:12px}
+  .logo{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .header-title{color:#fff;font-size:1rem;font-weight:600}
+  .header-sub{color:#94a3b8;font-size:.75rem;margin-top:1px}
+  .header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .month-select{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;padding:6px 12px;font-size:.85rem;cursor:pointer;outline:none}
+  .month-select option{background:var(--navy2);color:#fff}
+  .refresh-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;padding:6px 12px;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s}
+  .refresh-btn:hover{background:rgba(255,255,255,.2)}
+  .legend-bar{display:flex;gap:10px;padding:.75rem 1.5rem;background:#fff;border-bottom:1px solid var(--gray-200);flex-wrap:wrap;align-items:center}
+  .legend-label{font-size:.75rem;color:var(--gray-600);margin-right:4px}
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+  .pill-D  {background:#d1fae5;color:#065f46}
+  .pill-N  {background:#bfdbfe;color:#1e40af}
+  .pill-ID {background:#fed7aa;color:#9a3412}
+  .pill-IN {background:#1e40af;color:#fff}
+  .pill-DA {background:#fef08a;color:#713f12}
+  .pill-H  {background:#fce7f3;color:#9d174d}
+  .pill-DH {background:#ede9fe;color:#4c1d95}
+  .pill-XX {background:#fee2e2;color:#991b1b}
+  .pill-X  {background:#e5e7eb;color:#374151}
+  .pill-V  {background:#d6b896;color:#431407}
+  .pill-OT {background:#fef3c7;color:#92400e}
+  .state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:4rem 2rem;color:var(--gray-600);font-size:.9rem}
+  .spinner{width:36px;height:36px;border:3px solid var(--gray-200);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .error-box{margin:1.5rem;background:#fff5f5;border:1px solid #fecaca;border-radius:12px;padding:1.25rem 1.5rem;color:#991b1b;font-size:.875rem}
+  .error-box h3{font-size:1rem;margin-bottom:6px}
+  .table-outer{padding:1rem 1rem 2rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .table-info{margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .table-info-title{font-size:.85rem;font-weight:600;color:var(--navy)}
+  .table-info-time{font-size:.72rem;color:#6b7280;margin-left:auto}
+  .schedule-table{width:100%;border-collapse:separate;border-spacing:0;font-size:.75rem;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .schedule-table thead tr.tr-day th{background:var(--navy);color:#e2e8f0;padding:8px 4px;text-align:center;font-weight:500;white-space:nowrap;border-right:1px solid rgba(255,255,255,.07)}
+  .schedule-table thead tr.tr-shift th{background:#0f172a;color:#94a3b8;padding:4px 3px;text-align:center;font-size:.65rem;font-weight:400;border-right:1px solid rgba(255,255,255,.05)}
+  .schedule-table thead th.th-name{text-align:left;padding-left:14px;min-width:130px}
+  .schedule-table thead th.th-pos{min-width:60px}
+  .schedule-table thead th.th-today-d{background:#f59e0b!important;color:var(--navy)!important;font-weight:700}
+  .schedule-table thead th.th-today-n{background:#d97706!important;color:#fff!important;font-weight:700}
+  .schedule-table tbody td{padding:6px 4px;text-align:center;border-bottom:1px solid var(--gray-100);border-right:1px solid var(--gray-100);color:var(--gray-800)}
+  .schedule-table tbody tr:last-child td{border-bottom:none}
+  .schedule-table tbody tr:nth-child(even) td{background:var(--gray-50)}
+  .schedule-table tbody tr:hover td{background:#eff6ff}
+  .schedule-table tbody td.td-name{text-align:left;padding-left:14px;font-weight:500;white-space:nowrap}
+  .schedule-table tbody td.td-pos{color:var(--gray-600);font-size:.68rem;white-space:nowrap}
+  .schedule-table tbody td.td-today{background:#fffbeb!important}
+  .schedule-table tbody tr:hover td.td-today{background:#fef9c3!important}
+  .sb{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;font-weight:700;font-size:.67rem;line-height:1}
+  /* ── Shift badges ── */
+  .sb-D  {background:#d1fae5;color:#065f46}          /* เขียว — เวรเช้า */
+  .sb-N  {background:#bfdbfe;color:#1e40af}          /* ฟ้า — เวรดึก */
+  .sb-ID {background:#fed7aa;color:#9a3412}          /* ส้ม — หัวหน้าเวรเช้า */
+  .sb-IN {background:#1e40af;color:#fff}             /* น้ำเงิน — หัวหน้าเวรดึก */
+  .sb-DA {background:#fef08a;color:#713f12}          /* เหลือง — เวรเช้างานพิเศษ */
+  .sb-H  {background:#fce7f3;color:#9d174d}          /* ชมพู — Home Case */
+  .sb-DH {background:#ede9fe;color:#4c1d95}          /* ม่วง — พาผู้ป่วยไป รพ. */
+  .sb-XX {background:#fee2e2;color:#991b1b}          /* แดง — ขอหยุด */
+  .sb-X  {background:#e5e7eb;color:#374151}          /* เทา — วันหยุด */
+  .sb-V  {background:#d6b896;color:#431407}          /* น้ำตาล — ลาพักร้อน */
+  .sb-OT {background:#fef3c7;color:#92400e;font-size:.55rem;width:26px}
+  .sb-empty{color:#e5e7eb;font-size:.9rem}
+  .sb-sm{font-size:.55rem;width:26px}
+  .sb-other{display:inline-block;background:var(--gray-100);color:var(--gray-600);border-radius:4px;font-size:.58rem;padding:1px 2px;max-width:30px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+  .footer{text-align:center;padding:1rem;color:var(--gray-400);font-size:.72rem;border-top:1px solid var(--gray-200);background:#fff}
+  @media(max-width:600px){.header{padding:.75rem 1rem}.legend-bar{padding:.6rem 1rem}.table-outer{padding:.75rem .5rem 2rem}.sb{width:18px;height:18px;font-size:.6rem}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <div class="logo">🏥</div>
+    <div>
+      <div class="header-title">ตารางเวรพนักงาน <span style="font-weight:300;opacity:.7">/ Duty Roster</span></div>
+      <div class="header-sub">Yusokh Care Solution</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <select class="month-select" id="monthSelect" onchange="onMonthChange()"></select>
+    <button class="refresh-btn" onclick="loadSheet(true)">🔄 รีเฟรช / Refresh</button>
+  </div>
+</header>
+
+<div class="legend-bar">
+  <span class="legend-label">สัญลักษณ์ / Legend:</span>
+  <span class="pill pill-D">D เวรเช้า / Day</span>
+  <span class="pill pill-N">N เวรดึก / Night</span>
+  <span class="pill pill-ID">ID หน.เวรเช้า / Head Day</span>
+  <span class="pill pill-IN">IN หน.เวรดึก / Head Night</span>
+  <span class="pill pill-DA">DA งานพิเศษ / Special</span>
+  <span class="pill pill-H">H โฮมเคส / Home Case</span>
+  <span class="pill pill-DH">DH ส่ง รพ. / Hospital</span>
+  <span class="pill pill-XX">XX ขอหยุด / Day Off Req.</span>
+  <span class="pill pill-X">X วันหยุด / Off</span>
+  <span class="pill pill-V">V พักร้อน / Annual Leave</span>
+</div>
+
+<div id="content">
+  <div class="state-box"><div class="spinner"></div><div>กำลังโหลดตารางเวร... / Loading duty roster...</div></div>
+</div>
+
+<footer class="footer">Yusokh Care Solution · ข้อมูลดึงจาก Google Sheets / Data from Google Sheets · อัปเดตอัตโนมัติทุกครั้งที่เปิด / Auto-updated on every load</footer>
+
+<script>
+// =====================================================================
+//  CONFIG — แก้แค่ตรงนี้
+// =====================================================================
+const SHEET_ID = "2PACX-1vSMP7HSnQbinkmfVA87l_zjrM9llAXMRbFUFT1_bMjDm9HdmYk7lX8ySpUHsxKbEg";
+const SHEETS = [
+  { label: "ตารางเวรพนักงานปัจจุบัน 2026", gid: "1055632922" },
+];
+
+// โครงสร้าง Sheet:
+//   Col A = ชื่อ-สกุล | Col B = ตำแหน่ง
+//   Col D = วันที่ 1 เวร D (เช้า) | Col E = วันที่ 1 เวร N (ดึก)
+//   Col F = วันที่ 2 เวร D       | Col G = วันที่ 2 เวร N
+//   ... (คู่ละ 2 col ไปเรื่อยๆ)
+const DAY1_D_IDX = 2;  // Col C (0-based) = วันที่ 1 เวร D (เช้า)
+const DAY1_N_IDX = 3;  // Col D (0-based) = วันที่ 1 เวร N (ดึก)
+const TOTAL_DAYS = 31; // จำนวนวันในเดือน (แก้ได้ตามเดือน 28/29/30/31)
+const STAFF_POSITIONS = ['manager','incharge','cg','na','pn','แม่บ้าน','standby','นำส่ง'];
+// =====================================================================
+
+let cache = {};
+
+async function loadSheet(force=false) {
+  const gid = document.getElementById('monthSelect').value;
+  if (!gid) return;
+  const content = document.getElementById('content');
+  if (!force && cache[gid]) { renderTable(cache[gid], gid); return; }
+  content.innerHTML = `<div class="state-box"><div class="spinner"></div><div>กำลังโหลด... / Loading...</div></div>`;
+  const url = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?gid=${gid}&single=true&output=csv&t=${force?Date.now():''}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const csv = await res.text();
+    if (csv.trim().length < 10) throw new Error('empty');
+    cache[gid] = parseCSV(csv);
+    renderTable(cache[gid], gid);
+  } catch(e) {
+    content.innerHTML = `<div class="error-box">
+      <h3>⚠️ โหลดตารางเวรไม่ได้ / Cannot load roster</h3>
+      <p>กรุณาตรวจสอบว่า Google Sheets ได้ Publish to web แล้ว / Please check that Google Sheets is published to web</p>
+      <p style="margin-top:8px;font-size:.75rem;color:#b91c1c">Error: ${e.message}</p>
+    </div>`;
+  }
+}
+
+function parseCSV(csv) {
+  return csv.split('\n').map(line => {
+    const cells=[]; let cur='', inQ=false;
+    for (const c of line) {
+      if (c==='"') inQ=!inQ;
+      else if (c===',' && !inQ) { cells.push(cur.trim()); cur=''; }
+      else cur+=c;
+    }
+    cells.push(cur.trim());
+    return cells;
+  });
+}
+
+function renderTable(rows, gid) {
+  const today = new Date().getDate();
+  const label = SHEETS.find(s=>s.gid===gid)?.label||'';
+
+  // กรองแถวพนักงาน (col B มีตำแหน่ง)
+  const staffRows = rows.filter(row => {
+    const pos = (row[1]||'').trim().toLowerCase();
+    return pos && STAFF_POSITIONS.some(p => pos.includes(p)) && (row[0]||'').trim().length > 2;
+  });
+
+  if (!staffRows.length) {
+    document.getElementById('content').innerHTML = `<div class="error-box">
+      <h3>⚠️ ไม่พบข้อมูลพนักงาน / No staff data found</h3>
+      <p>กรุณาตรวจสอบว่าคอลัมน์ B มีตำแหน่งงาน เช่น Manager, incharge, CG, NA, PN / Please check that column B contains job positions</p>
+    </div>`;
+    return;
+  }
+
+  // ── thead row 1: ชื่อ + วันที่ 1..30 ──
+  let tr1 = `<tr class="tr-day">
+    <th class="th-name" rowspan="2">ชื่อ-สกุล / Name</th>
+    <th class="th-pos" rowspan="2">ตำแหน่ง / Position</th>`;
+  for (let d=1; d<=TOTAL_DAYS; d++) {
+    const cls = d===today ? 'th-today-d' : '';
+    tr1 += `<th colspan="2" class="${cls}" style="min-width:48px">${d}</th>`;
+  }
+  tr1 += `</tr>`;
+
+  // ── thead row 2: D/N sub-header ──
+  let tr2 = `<tr class="tr-shift">`;
+  for (let d=1; d<=TOTAL_DAYS; d++) {
+    const clsD = d===today ? 'th-today-d' : '';
+    const clsN = d===today ? 'th-today-n' : '';
+    tr2 += `<th class="${clsD}" style="width:24px">D</th><th class="${clsN}" style="width:24px">N</th>`;
+  }
+  tr2 += `</tr>`;
+
+  // ── tbody ──
+  let tbody = '<tbody>';
+  for (const row of staffRows) {
+    const name = (row[0]||'').replace(/\n/g,' ').trim();
+    const pos  = (row[1]||'').trim();
+    tbody += `<tr><td class="td-name">${esc(name)}</td><td class="td-pos">${esc(pos)}</td>`;
+    for (let d=1; d<=TOTAL_DAYS; d++) {
+      const dIdx = DAY1_D_IDX + (d-1)*2;  // D ก่อน (col D, F, H...)
+      const nIdx = DAY1_N_IDX + (d-1)*2;  // N ตาม (col E, G, I...)
+      const dVal = (row[dIdx]||'').trim();
+      const nVal = (row[nIdx]||'').trim();
+      const isToday = d===today;
+      tbody += `<td class="${isToday?'td-today':''}">${badge(dVal)}</td>`;
+      tbody += `<td class="${isToday?'td-today':''}">${badge(nVal)}</td>`;
+    }
+    tbody += `</tr>`;
+  }
+  tbody += '</tbody>';
+
+  document.getElementById('content').innerHTML = `
+    <div class="table-outer">
+      <div class="table-info">
+        <span class="table-info-title">📅 ${esc(label)}</span>
+        <span class="table-info-time">วันนี้ / Today = คอลัมน์สีเหลือง · Updated: ${new Date().toLocaleTimeString('th-TH')}</span>
+      </div>
+      <div style="overflow-x:auto;border-radius:12px;border:1px solid #e5e7eb">
+        <table class="schedule-table">
+          <thead>${tr1}${tr2}</thead>
+          ${tbody}
+        </table>
+      </div>
+    </div>`;
+}
+
+function badge(v) {
+  if (!v) return `<span class="sb-empty">·</span>`;
+  const u = v.toUpperCase().replace(/\s/g,'');
+  if (u==='D')  return `<span class="sb sb-D">D</span>`;
+  if (u==='N')  return `<span class="sb sb-N">N</span>`;
+  if (u==='ID') return `<span class="sb sb-ID sb-sm">ID</span>`;
+  if (u==='IN') return `<span class="sb sb-IN sb-sm">IN</span>`;
+  if (u==='DA') return `<span class="sb sb-DA sb-sm">DA</span>`;
+  if (u==='H')  return `<span class="sb sb-H">H</span>`;
+  if (u==='DH') return `<span class="sb sb-DH sb-sm">DH</span>`;
+  if (u==='XX') return `<span class="sb sb-XX sb-sm">XX</span>`;
+  if (u==='X'||u==='x') return `<span class="sb sb-X">X</span>`;
+  if (u==='V')  return `<span class="sb sb-V">V</span>`;
+  if (u==='OT') return `<span class="sb sb-OT">OT</span>`;
+  if (u==='TT') return `<span class="sb sb-H sb-sm">TT</span>`;
+  return `<span class="sb-other" title="${esc(v)}">${esc(v.slice(0,4))}</span>`;
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function onMonthChange() { loadSheet(); }
+
+(function init() {
+  const sel = document.getElementById('monthSelect');
+  SHEETS.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.gid; o.textContent = s.label;
+    sel.appendChild(o);
+  });
+  if (SHEETS.length) loadSheet();
+})();
+</script>
+</body>
+</html>
