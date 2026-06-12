@@ -688,7 +688,7 @@ async function notifyAdvanceLine(record) {
   };
   const res = await fetch(GAS_URL + '?action=notifyAdvanceRequest', {
     method: 'POST',
-    mode: 'no-cors',
+    
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'notifyAdvanceRequest', payload })
   });
@@ -1077,7 +1077,7 @@ async function updStatus(id,status){
           const data = typeof r.data === 'string' ? JSON.parse(r.data) : r.data || {};
           await fetch(GAS_URL + '?action=notifyAdvanceApproved', {
             method: 'POST',
-            mode: 'no-cors',
+            
            headers: {'Content-Type':'application/json'},
             body: JSON.stringify({
               action: 'notifyAdvanceApproved',
