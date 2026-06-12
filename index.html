@@ -1075,27 +1075,19 @@ async function updStatus(id,status){
         const r = reqs[0];
         if(r) {
           const data = typeof r.data === 'string' ? JSON.parse(r.data) : r.data || {};
-          await fetch(GAS_URL + '?action=notifyAdvanceApproved', {
-            method: 'POST',
-            
-           headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({
-              action: 'notifyAdvanceApproved',
-              payload: {
-                name:              r.staff || '',
-                amount:            data.amount || 0,
-                date:              data.date   || '',
-                reason:            data.reason || '',
-                method:            data.method || '',
-                bankName:          r.bank_name          || '',
-                bankAccountName:   r.bank_account_name  || '',
-                bankAccountNumber: r.bank_account_number|| '',
-                promptpayNumber:   r.promptpay_number   || '',
-                promptpayName:     r.promptpay_name     || '',
-                approvedBy:        currentUser?.name    || 'ผู้จัดการ'
-              }
-            })
-          });
+        await fetch(GAS_URL + '?action=notifyAdvanceApproved&payload=' + encodeURIComponent(JSON.stringify({
+          name: r.staff || '',
+          amount: data.amount || 0,
+          date: data.date || '',
+          reason: data.reason || '',
+          method: data.method || '',
+          bankName: r.bank_name || '',
+          bankAccountName: r.bank_account_name || '',
+          bankAccountNumber: r.bank_account_number || '',
+          promptpayNumber: r.promptpay_number || '',
+          promptpayName: r.promptpay_name || '',
+          approvedBy: currentUser?.name || 'ผู้จัดการ'
+        })));
         }
       } catch(lineErr) { console.warn('LINE notify approved:', lineErr); }
     }
