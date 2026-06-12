@@ -1078,7 +1078,7 @@ async function updStatus(id,status){
           await fetch(GAS_URL + '?action=notifyAdvanceApproved', {
             method: 'POST',
             mode: 'no-cors',
-            headers: {'Content-Type':'text/plain'},
+           headers: {'Content-Type':'application/json'},
             body: JSON.stringify({
               action: 'notifyAdvanceApproved',
               payload: {
